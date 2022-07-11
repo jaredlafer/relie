@@ -64,7 +64,6 @@ class RestrictedSE3ExpTransform(Transform):
     def _inverse(self, y):
         x = se3_log(y)
         rot_alg = x[..., 3:]
-
         if self.axis_angle:
             norms = rot_alg.norm(dim=-1)
             mask = norms < self.support_angles.norm(dim=-1)
@@ -73,7 +72,9 @@ class RestrictedSE3ExpTransform(Transform):
             mask = torch.bitwise_and(torch.all(euler_angles < self.support_angles, dim=-1, keepdim=True), torch.all(euler_angles > -self.support_angles, dim=-1, keepdim=True))
             mask = mask.squeeze(-1)
 
-        return x.masked_fill(~mask[..., None], 0)
+            x = x.masked_fill(~mask[..., None], 0)
+
+        return x, mask
 
     def log_abs_det_jacobian(self, x, y):
         """
