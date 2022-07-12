@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='relie',
-    version='1.9',
+    version='1.12',
     packages=find_packages(),
     install_requires=[
         'torch',

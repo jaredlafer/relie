@@ -1,10 +1,10 @@
 import torch
+from relie import LocalDiffeoTransform
+from relie.se3_exp_transform import RestrictedSE3ExpTransform
 from torch.distributions import constraints
 from torch.distributions.distribution import Distribution
 from torch.distributions.transforms import Transform
 from torch.distributions.utils import _sum_rightmost
-
-from relie import LocalDiffeoTransform
 
 
 class LocalDiffeoTransformedDistribution(Distribution):
@@ -98,7 +98,16 @@ class LocalDiffeoTransformedDistribution(Distribution):
 
         transform, *transforms = transforms
 
-        if isinstance(transform, Transform):
+        if isinstance(transform, RestrictedSE3ExpTransform):
+            x, mask = transform.inv(y)
+            # First propate back x to use caching
+            x_log_prob = -_sum_rightmost(
+                transform.log_abs_det_jacobian(x, y), event_dim - transform.event_dim
+            )
+            x_next_log_prob = self._log_prob(x, transforms)
+            sum_log_prob = torch.where(mask, x_log_prob.float() + x_next_log_prob.float(), torch.tensor([float("-inf")], device=x_log_prob.device))
+            return sum_log_prob
+        elif isinstance(transform, Transform):
             x = transform.inv(y)
             log_prob = -_sum_rightmost(
                 transform.log_abs_det_jacobian(x, y), event_dim - transform.event_dim
