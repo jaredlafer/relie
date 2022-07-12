@@ -72,7 +72,7 @@ class RestrictedSE3ExpTransform(Transform):
             mask = torch.bitwise_and(torch.all(euler_angles < self.support_angles, dim=-1, keepdim=True), torch.all(euler_angles > -self.support_angles, dim=-1, keepdim=True))
             mask = mask.squeeze(-1)
 
-            x = x.masked_fill(~mask[..., None], 0)
+        x = x.masked_fill(~mask[..., None], 0)
 
         return x, mask
 
