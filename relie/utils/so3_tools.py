@@ -155,7 +155,7 @@ def so3_log_abs_det_jacobian(x):
     Removable pole: (2-2 cos x)/x^2 -> 1-x^2/12 as x->0
     """
     x_norm = x.double().norm(dim=-1)
-    mask = x_norm > 1e-10
+    mask = torch.logical_and(torch.cos(x_norm) < 1, x_norm**2 > 0)
     x_norm = torch.where(mask, x_norm, torch.ones_like(x_norm))
 
     ratio = torch.where(
